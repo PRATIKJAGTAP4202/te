@@ -1,0 +1,209 @@
+AI-1
+
+from collections import deque, defaultdict
+
+class Graph:
+    def __init__(self):
+        self.graph = defaultdict(list)
+
+    def add_edge(self, u, v):
+        self.graph[u].append(v)
+        self.graph[v].append(u)
+
+    def dfs(self, start, visited=None):
+        if visited is None:
+            visited = set()
+        visited.add(start)
+        print(start, end=' ')
+        for neighbor in self.graph[start]:
+            if neighbor not in visited:
+                self.dfs(neighbor, visited)
+
+    def bfs(self, start):
+        visited = set()
+        queue = deque([start])
+        while queue:
+            vertex = queue.popleft()
+            if vertex not in visited:
+                print(vertex, end=' ')
+                visited.add(vertex)
+                queue.extend([neighbor for neighbor in self.graph[vertex] if neighbor not in visited])
+
+if __name__ == "__main__":
+    g = Graph()
+    # Adding edges to the graph
+    g.add_edge(1, 2)
+    g.add_edge(1, 3)
+    g.add_edge(2, 4)
+    g.add_edge(2, 5)
+    g.add_edge(3, 6)
+    g.add_edge(3, 7)
+
+    print("DFS Traversal:")
+    g.dfs(1)
+
+    print("\nBFS Traversal:")
+    g.bfs(1)
+
+AI-2
+
+import heapq
+
+def a_star(grid, start, goal):
+    def heuristic(a, b):
+        return abs(a[0] - b[0]) + abs(a[1] - b[1])  # Manhattan distance
+
+    open_set = [(0, start)]
+    came_from = {}
+    g_score = {start: 0}
+
+    while open_set:
+        _, current = heapq.heappop(open_set)
+
+        if current == goal:
+            path = []
+            while current in came_from:
+                path.append(current)
+                current = came_from[current]
+            path.append(start)
+            return path[::-1]
+
+        for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+            neighbor = (current[0] + dx, current[1] + dy)
+            if (
+                0 <= neighbor[0] < len(grid)
+                and 0 <= neighbor[1] < len(grid[0])
+                and grid[neighbor[0]][neighbor[1]] == 0
+            ):
+                new_cost = g_score[current] + 1
+                if neighbor not in g_score or new_cost < g_score[neighbor]:
+                    g_score[neighbor] = new_cost
+                    heapq.heappush(open_set, (new_cost + heuristic(neighbor, goal), neighbor))
+                    came_from[neighbor] = current
+
+    return None  # No path found
+
+# Example usage:
+grid = [
+    [0, 1, 0],
+    [0, 1, 0],
+    [0, 0, 0],
+]
+start, goal = (0, 0), (2, 2)
+
+print("A* Path:", a_star(grid, start, goal))
+
+AI-3
+
+def kruskal(vertices, edges):
+    parent = {v: v for v in vertices}
+
+    def find(v):
+        if parent[v] != v:
+            parent[v] = find(parent[v])  # Path compression
+        return parent[v]
+
+    def union(v1, v2):
+        parent[find(v1)] = find(v2)
+
+    mst = []
+    for u, v, w in sorted(edges, key=lambda x: x[2]):  # Sort edges by weight
+        if find(u) != find(v):
+            mst.append((u, v, w))
+            union(u, v)
+    return mst
+
+# Example usage
+vertices = ['A', 'B', 'C', 'D', 'E']
+edges = [
+    ('A', 'B', 1),
+    ('A', 'C', 5),
+    ('B', 'C', 4),
+    ('B', 'D', 2),
+    ('C', 'D', 6),
+    ('D', 'E', 3)
+]
+
+mst = kruskal(vertices, edges)
+print("Minimum Spanning Tree:", mst)
+
+AI-4
+
+def solve_n_queens(n):
+    def is_safe(board, row, col):
+        for i in range(row):
+            # Check for conflicts with previously placed queens
+            if board[i] == col or abs(board[i] - col) == row - i:
+                return False
+        return True
+
+    def backtrack(row):
+        if row == n:
+            solutions.append(board[:])  # Found a solution
+            return
+        for col in range(n):
+            if is_safe(board, row, col):
+                board[row] = col
+                backtrack(row + 1)
+                board[row] = -1  # Backtrack
+
+    solutions = []
+    board = [-1] * n  # Initialize the board
+    backtrack(0)  # Start from the first row
+    return [["." * c + "Q" + "." * (n - c - 1) for c in sol] for sol in solutions]
+
+# Example usage
+n = 4
+solutions = solve_n_queens(n)
+print(f"Total solutions for {n}-Queens: {len(solutions)}")
+for solution in solutions:
+    print("\n".join(solution) + "\n")
+
+AI-5
+
+import random
+
+class ElementaryChatbot:
+    def __init__(self):
+        self.greetings = ["Hello!", "Hi there!", "Greetings!"]
+        self.goodbyes = ["Goodbye!", "See you later!", "Bye!"]
+        self.responses = {
+            "how are you": ["I'm good, thank you!", "I'm doing well, how about you?"],
+            "your name": ["I'm a chatbot, you can call me Bot.", "I don't have a name, just call me Bot."],
+            "joke": [
+                "Why don't scientists trust atoms? Because they make up everything!",
+                "What do you call fake spaghetti? An impasta!"
+            ],
+            "default": ["I'm not sure how to respond to that.", "Sorry, I didn't understand."]
+        }
+
+    def greet(self):
+        print(random.choice(self.greetings))
+
+    def respond(self, user_input):
+        user_input_lower = user_input.lower()
+        for key, value in self.responses.items():
+            if key in user_input_lower:
+                return random.choice(value)
+        return random.choice(self.responses["default"])
+
+    def say_goodbye(self):
+        print(random.choice(self.goodbyes))
+
+    def chat(self):
+        self.greet()
+        while True:
+            user_input = input("You: ")
+            if user_input.lower() == "exit":
+                self.say_goodbye()
+                break
+            response = self.respond(user_input)
+            print(f"Bot: {response}")
+
+if __name__ == "__main__":
+    bot = ElementaryChatbot()
+    bot.chat()
+
+
+
+
